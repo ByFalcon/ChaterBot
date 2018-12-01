@@ -1,7 +1,6 @@
 package org.ieszaidinvergeles.dam.chaterbot;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -11,32 +10,24 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.ieszaidinvergeles.dam.chaterbot.BaseDatos.Ayudante;
+import org.ieszaidinvergeles.dam.chaterbot.BaseDatos.Contrato;
+import org.ieszaidinvergeles.dam.chaterbot.BaseDatos.Gestor;
+import org.ieszaidinvergeles.dam.chaterbot.POJO.Conversacion;
 import org.ieszaidinvergeles.dam.chaterbot.api.ChatterBot;
 import org.ieszaidinvergeles.dam.chaterbot.api.ChatterBotFactory;
 import org.ieszaidinvergeles.dam.chaterbot.api.ChatterBotSession;
 import org.ieszaidinvergeles.dam.chaterbot.api.ChatterBotType;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Calendar;
 
 //https://github.com/pierredavidbelanger/chatter-bot-api
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btSend;
+    private Button btSend, btRecu;
     private EditText etTexto;
     private ScrollView svScroll;
     private TextView tvTexto;
@@ -45,15 +36,21 @@ public class MainActivity extends AppCompatActivity {
     private ChatterBotFactory factory;
     private ChatterBotSession botSession;
 
+    private Conversacion conver;
+    private Gestor gestor = new Gestor(this, true);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
+
+
     }
 
     private void init() {
         btSend = findViewById(R.id.btSend);
+        btRecu = findViewById(R.id.btRecu);
         etTexto = findViewById(R.id.etTexto);
         svScroll = findViewById(R.id.svScroll);
         tvTexto = findViewById(R.id.tvTexto);
@@ -66,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         String response;
         try {
             response = getString(R.string.bot) + " " + botSession.think(text);
+            conver = new Conversacion("bot>", text, Calendar.getInstance().getTime());
+            gestor.insertarConversacion(conver);
         } catch (final Exception e) {
             response = getString(R.string.exception) + " " + e.toString();
         }
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final String text = getString(R.string.you) + " " + etTexto.getText().toString().trim();
+                conver = new Conversacion("you>", etTexto.getText().toString().trim(),Calendar.getInstance().getTime());
                 btSend.setEnabled(false);
                 etTexto.setText("");
                 tvTexto.append(text + "\n");
@@ -86,6 +86,17 @@ public class MainActivity extends AppCompatActivity {
                         chat(text);
                     }
                 }.start();
+            }
+        });
+
+        btRecu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<Conversacion> conversaciones = Gestor.getConversaciones();
+                for (Conversacion conversacion:conversaciones) {
+                    tvTexto.setText(conversacion.toString());
+                }
+
             }
         });
     }
@@ -127,6 +138,4 @@ public class MainActivity extends AppCompatActivity {
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
-
-    
 }
