@@ -24,7 +24,7 @@ public class Gestor {
     public Gestor(Context c, boolean write){
         this.abd = new Ayudante(c);
         if(write){
-            bd=abd.getWritableDatabase();
+            bd=abd.getWritableDatabase(); //Error 
         }else {
             bd = abd.getReadableDatabase();
         }
