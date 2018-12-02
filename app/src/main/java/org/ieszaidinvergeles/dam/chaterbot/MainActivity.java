@@ -63,12 +63,12 @@ public class MainActivity extends AppCompatActivity {
         String response;
         try {
             response = getString(R.string.bot) + " " + botSession.think(text);
-            conver = new Conversacion("bot>", text, Calendar.getInstance().getTime());
-            gestor.insertarConversacion(conver);
+            conver = new Conversacion("bot>", botSession.think(text), Calendar.getInstance().getTime());
         } catch (final Exception e) {
             response = getString(R.string.exception) + " " + e.toString();
         }
         tvTexto.post(showMessage(response));
+        gestor.insertarConversacion(conver);
     }
 
     private void setEvents() {
